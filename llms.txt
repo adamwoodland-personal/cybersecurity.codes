@@ -12,4 +12,5 @@ Technical: static site, MIT licensed, installable PWA that works fully offline (
 
 ## Related
 
-- [Adam's Arcade](https://games.adamwoodland.com/): free browser games, including a cybersecurity-themed shooter, by the same author
+- [Adam's Arcade](https://games.adamwoodland.com/): all of the author's free browser games and tools
+- [Adam Woodland](https://adamwoodland.com/): the author, an OT/ICS cybersecurity consultant; this site is a side project

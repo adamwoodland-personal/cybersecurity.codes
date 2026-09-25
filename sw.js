@@ -8,7 +8,7 @@
 
 "use strict";
 
-const CACHE = "gcca-v2";
+const CACHE = "gcca-v3";
 
 const PRECACHE = [
   "/",
