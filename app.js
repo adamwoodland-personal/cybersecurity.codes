@@ -143,14 +143,17 @@
 
       // Click anywhere on the panel to copy the code (strip decorative quotes).
       const copyText = code.value.replace(/[“”]/g, "");
-      panel.addEventListener("click", () => copyCode(panel, note, code.note, copyText));
+      panel.addEventListener("click", () => copyCode(panel, value, note, code.note, copyText));
 
       return { el: value, text: code.value };
     });
   }
 
-  function copyCode(panel, noteEl, originalNote, text) {
-    navigator.clipboard.writeText(text).then(() => {
+  // The async Clipboard API first. Where it is missing (older browsers, pages not served over
+  // https) or refuses, the legacy copy command; failing that, the code is selected on screen so
+  // it can be copied by hand.
+  function copyCode(panel, valueEl, noteEl, originalNote, text) {
+    const copied = () => {
       panel.classList.add("copied");
       noteEl.textContent = "✓ SECURELY COPIED TO CLIPBOARD. GUARD IT WELL.";
       clearTimeout(panel._copyTimer);
@@ -158,11 +161,53 @@
         panel.classList.remove("copied");
         noteEl.textContent = originalNote;
       }, 1600);
-    }).catch(() => {
-      noteEl.textContent = "✗ CLIPBOARD ACCESS DENIED. THE CODES REMAIN SAFE.";
+    };
+    const byHand = () => {
+      selectCode(valueEl);
+      noteEl.textContent = "✗ CLIPBOARD ACCESS DENIED. CODE SELECTED: COPY IT BY HAND.";
       clearTimeout(panel._copyTimer);
-      panel._copyTimer = setTimeout(() => { noteEl.textContent = originalNote; }, 1600);
-    });
+      panel._copyTimer = setTimeout(() => { noteEl.textContent = originalNote; }, 4000);
+    };
+    const fallback = () => (legacyCopy(text) ? copied() : byHand());
+    let pending = null;
+    try {
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        pending = navigator.clipboard.writeText(text);
+      }
+    } catch (e) { pending = null; }
+    if (pending && typeof pending.then === "function") pending.then(copied, fallback);
+    else fallback();
+  }
+
+  function legacyCopy(text) {
+    const back = document.activeElement;
+    const buf = document.createElement("textarea");
+    buf.value = text;
+    buf.readOnly = true;
+    buf.className = "copy-buffer";
+    document.body.append(buf);
+    buf.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    buf.remove();
+    if (back && typeof back.focus === "function") back.focus({ preventScroll: true });
+    return ok;
+  }
+
+  // Select the code's text on screen, leaving out the decorative quotes as the copy does.
+  function selectCode(el) {
+    const sel = window.getSelection ? window.getSelection() : null;
+    if (!sel) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const t = el.firstChild;
+    if (t && t.nodeType === Node.TEXT_NODE) {
+      const s = t.textContent;
+      range.setStart(t, s.startsWith("“") ? 1 : 0);
+      range.setEnd(t, s.endsWith("”") ? s.length - 1 : s.length);
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 
   function typeInto(el, text, speed) {

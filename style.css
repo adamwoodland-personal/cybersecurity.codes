@@ -225,9 +225,26 @@ main:focus { outline: none; }
   min-height: 1.2em;
   text-shadow: var(--glow-strong);
   overflow-wrap: anywhere;
+  /* selectable, so a code can be copied by hand where the clipboard is unavailable (app.js) */
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .panel-value .cursor { animation: blink 0.8s steps(2, start) infinite; }
+
+/* off-screen buffer for the legacy copy fallback (app.js legacyCopy); 16px stops iOS zooming */
+.copy-buffer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  font-size: 16px;
+}
 
 .panel-note {
   display: block;

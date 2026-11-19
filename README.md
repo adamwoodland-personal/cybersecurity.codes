@@ -17,7 +17,9 @@ them to your government.)
 
 ## How it works
 
-- Static page: `index.html`, `style.css`, `app.js`. No backend, no cookies, no tracking, no idea.
+- Static page: `index.html`, `style.css`, `app.js`. No backend, no cookies, no tracking or
+  analytics scripts, no idea. Two things do leave the browser: the VT323 font is loaded from
+  Google Fonts, and CloudFront keeps standard access logs, used only for visitor statistics.
 - The codes are derived from the UTC date: the date string is hashed (xmur3) to seed a small
   PRNG (mulberry32), and the day's codes are drawn from word banks with that generator. Same
   date in, same codes out, on every device. This is the entire security model.
